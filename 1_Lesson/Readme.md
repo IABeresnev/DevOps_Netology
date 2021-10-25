@@ -2,15 +2,15 @@
 ## Домашнее задание для урока №1
 
 ### Задание №1. Проверка работы установленных плагинов.
-1) Terraform
+1) Terraform<br>
 ![Terraform!](/1_Lesson/images/tf.PNG)<br>
-2) Bash
+2) Bash<br>
 ![Bash!](/1_Lesson/images/sh.PNG)<br>
-3) Markdown
+3) Markdown<br>
 ![md!](/1_Lesson/images/md.PNG)<br>
-4) Yaml
+4) Yaml<br>
 ![yaml!](/1_Lesson/images/yaml.PNG)<br>
-5) Jsonnet
+5) Jsonnet<br>
 ![json!](/1_Lesson/images/jsonnet.PNG)
 
 ### Задание №2. Описание жизненного цикла задачи.
