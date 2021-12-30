@@ -33,4 +33,65 @@
 		sleep 10
 	done
 ```
-3. 
+3. Текст скрипта для выполнения задания. Сам скрипт расположен в файле task3.sh.
+```bash
+#!/bin/bash
+
+function checkip {
+if [ $# -eq 0 ]
+then
+echo -1
+else
+  local arr
+  arr=$@
+  x=0
+  while ((x<5))
+  do
+  echo "Next try" >> task.log
+  for i in ${arr[@]}
+    do
+    nc -zv -w2 $i 80 >/dev/null 2>&1
+    if (($? != 1))
+    then
+      echo $(date)  $i "is good" >> task.log
+    else
+      echo $(date)  $i "is down" >> task.log
+    fi
+    done
+  x=$(($x+1))
+  done
+fi
+}
+checkip 192.168.0.1 173.194.222.113 87.250.250.242
+```
+Для удобства работы и нежелания дублировать код, нашел как сделать функцию. Дольше всего провозился с обработкой массива параметров.
+
+4. Немного подредактировал скрипт из задания 3. Будет проверять пачку хостов хостов каждые 10 секунд. Если какойто хост упадет его IP адрес попадет в файл error.log и выполнение скрипта прервется.
+```bash
+#!/bin/bash
+
+function checkip {
+if [ $# -eq 0 ]
+then
+echo -1
+else
+  local arr
+  arr=$@
+  x=0
+  while ((1==1))
+  do
+  for i in ${arr[@]}
+    do
+    nc -zv -w2 $i 80 >/dev/null 2>&1
+    if (($? != 0))
+    then
+      echo $i >> error.log
+      exit
+    fi
+    done
+  sleep 10
+  done
+fi
+}
+checkip 173.194.222.113 87.250.250.242 192.168.0.1 87.250.250.242
+```
