@@ -2,8 +2,12 @@
 
 import os
 import re
+import sys
 
-pathToRepo="~/PycharmProjects/DevOps_Netology/"
+if len(sys.argv)>=2:
+    pathToRepo=sys.argv[1]
+else:
+    pathToRepo=os.getcwd()
 regex = r"(?:modified:\s*.*)"
 bash_command = ["cd "+pathToRepo, "git status"]
 result_os = os.popen(' && '.join(bash_command)).read()

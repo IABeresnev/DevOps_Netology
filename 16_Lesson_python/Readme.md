@@ -37,12 +37,28 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import os
+import re
+
+pathToRepo="~/PycharmProjects/DevOps_Netology/"
+regex = r"(?:modified:\s*.*)"
+bash_command = ["cd "+pathToRepo, "git status"]
+result_os = os.popen(' && '.join(bash_command)).read()
+if result_os.find('modified') != -1:
+    matches = re.finditer(regex, result_os, re.MULTILINE)
+    for match in enumerate(matches):
+        rez = str(list(match)[1])
+        print(pathToRepo+rez[rez.find(":")+4:-2])
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+python3 16_Lesson_python/sourcecheck.py                                                                                                  bash   100  13:28:07 
+~/PycharmProjects/DevOps_Netology/.gitignore
+~/PycharmProjects/DevOps_Netology/16_Lesson_python/sourcecheck.py
 ```
 
 ## Обязательная задача 3
@@ -50,12 +66,31 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import os
+import re
+import sys
+
+if len(sys.argv)>=2:
+    pathToRepo=sys.argv[1]
+else:
+    pathToRepo=os.getcwd()
+regex = r"(?:modified:\s*.*)"
+bash_command = ["cd "+pathToRepo, "git status"]
+result_os = os.popen(' && '.join(bash_command)).read()
+if result_os.find('modified') != -1:
+    matches = re.finditer(regex, result_os, re.MULTILINE)
+    for match in enumerate(matches):
+        rez = str(list(match)[1])
+        print(pathToRepo+rez[rez.find(":")+4:-2])
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+python3 16_Lesson_python/sourcecheck.py /home/yolo/PycharmProjects/DevOps_Netology/                                                      bash   100  13:40:42 
+/home/yolo/PycharmProjects/DevOps_Netology/16_Lesson_python/Readme.md
+/home/yolo/PycharmProjects/DevOps_Netology/16_Lesson_python/sourcecheck.py
 ```
 
 ## Обязательная задача 4
