@@ -12,7 +12,7 @@ curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
 sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 sudo apt-get update && sudo apt-get install vault
 ```
-Проверяем что все корректно установилось выполняем команду  `vault`
+Проверяем что все корректно установилось выполняем команду  `vault`  
 4. Создаем центр сертификации и выпускаем сертификат для NGINX.  
 Для автоматизации первого запуска Vault и выпуска первых необходимых сертификатов написал скрипт vaultFirstTimeRun.sh расположен в папке conf.  
 Разберем содержимое файла.  
