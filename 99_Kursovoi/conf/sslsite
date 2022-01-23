@@ -1,0 +1,7 @@
+server {
+      listen 443 ssl;
+      listen [::]:443 ssl;
+      ssl_certificate /etc/ssl/certs/test.shadow.com.crt;
+      ssl_certificate_key /etc/ssl/private/test.shadow.com.key;
+      ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+}

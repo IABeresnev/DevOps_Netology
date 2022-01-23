@@ -1,0 +1,29 @@
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "bento/ubuntu-21.10"
+  config.vm.network "public_network", guest: 443, host: 443
+  config.vm.synced_folder ".", "/vagrant"
+
+  config.vm.provision "shell", inline: <<-SHELL
+    mkdir -p /vaultprod/vault/data
+    cp /vagrant/conf/config.hcl /etc/config.hcl
+    cp /vagrant/conf/vaultUpdateCertNginx.sh /vaultprod/
+    cp /vagrant/conf/vaultFirstTimeRun.sh /vaultprod/
+    apt-get install -y ufw curl jq mc
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+    apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    apt-get update
+    apt-get install -y nginx vault
+    ufw allow 22; ufw allow 443; ufw allow from 127.0.0.1; ufw default deny;
+    echo "y" | sudo ufw enable
+    systemctl enable vault.service
+    cp /vagrant/conf/vault.service /etc/systemd/system/
+    systemctl daemon-reload
+    bash /vaultprod/vaultFirstTimeRun.sh
+    cp /vagrant/conf/sslsite /etc/nginx/sites-available/
+    ln -s /etc/nginx/sites-available/sslsite /etc/nginx/sites-enabled/
+    systemctl status vault
+    bash /vaultprod/vaultUpdateCertNginx.sh
+  SHELL
+end
