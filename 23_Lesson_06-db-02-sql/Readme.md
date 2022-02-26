@@ -40,7 +40,7 @@ psql -U pguser
 ```sql
 CREATE USER "test-admin-user";  
 CREATE DATABASE "test_db";
-- ```
+```
 
 - в БД test_db создайте таблицу orders и clients (спeцификация таблиц ниже)
 ```sql 
