@@ -31,9 +31,13 @@
 с наибольшим средним значением размера элементов в байтах.
 
 **Приведите в ответе** команду, которую вы использовали для вычисления и полученный результат.  
-`select tablename,attname,avg_width from pg_stats where tablename='orders';`  
+```sql
+select tablename,attname,avg_width from pg_stats where tablename='orders';
+```  
 или если хотим совсем красиво то вот так можно  
-`select tablename,attname,avg_width from pg_stats where tablename='orders' order by avg_width desc limit 1;`  
+```sql
+select tablename,attname,avg_width from pg_stats where tablename='orders' order by avg_width desc limit 1;
+```  
 ![taskavgwidth!](/25_Lesson_06-db-04-postgresql/images/taskavgwidth.png)<br>
 
 
@@ -44,11 +48,15 @@
 провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
 
 Предложите SQL-транзакцию для проведения данной операции.  
-`CREATE TABLE orders_1 ( CHECK ( price > 499)) INHERITS (orders);`  
-`CREATE TABLE orders_2 ( CHECK ( price <= 499)) INHERITS (orders);`  
+```sql
+CREATE TABLE orders_1 ( CHECK ( price > 499)) INHERITS (orders);  
+CREATE TABLE orders_2 ( CHECK ( price <= 499)) INHERITS (orders);
+```  
 Далее создаем правила, для корректной передачи(перенаправления/распределения) данных по разделенным таблицам.  
-`CREATE RULE orders_insert_to_1 AS ON INSERT TO orders WHERE ( price > 499) DO INSTEAD INSERT INTO orders_1 VALUES (NEW.*);`  
-`CREATE RULE orders_insert_to_2 AS ON INSERT TO orders WHERE ( price <= 499) DO INSTEAD INSERT INTO orders_2 VALUES (NEW.*);`  
+```sql
+CREATE RULE orders_insert_to_1 AS ON INSERT TO orders WHERE ( price > 499) DO INSTEAD INSERT INTO orders_1 VALUES (NEW.*);  
+CREATE RULE orders_insert_to_2 AS ON INSERT TO orders WHERE ( price <= 499) DO INSTEAD INSERT INTO orders_2 VALUES (NEW.*);
+```  
 ![taskshard!](/25_Lesson_06-db-04-postgresql/images/taskshard.png)<br>
 
 Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?  
