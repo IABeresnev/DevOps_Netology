@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: postgres13
+    image: postgres:13
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pguser
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+       - /home/yolo/PycharmProjects/DevOps_Netology/25_Lesson_06-db-04-postgresql/test_dump.sql:/test_dump.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres:
