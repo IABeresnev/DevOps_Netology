@@ -70,6 +70,39 @@ CREATE RULE orders_insert_to_2 AS ON INSERT TO orders WHERE ( price <= 499) DO I
 Если я верно понял формулировку задания. Предположу, что название столбца `test` недостаточно точно определяет его содержимое. Судя по содержимому таблицы `orders`
 мы имеем дело с чем-то книжным, из простого предложил бы переименовать столбец `title` в `booktitle` или более общее `goodstitle`.
 
+---
+#Доработка "Задача 4"
 
+После отправки на доработку, формулировка задания изменилась, стало яснее.  
+Как бы вы доработали бэкап-файл, чтобы добавить уникальность значенияМ столбца `title` для таблиц `test_database`? 
+```sql
+    CREATE TABLE public.orders (
+    id integer NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0
+);
+```
+
+В коде создании таблицы `orders` добавил бы параметр ```sql UNIQUE ```  который след за уникальностью данных в этом столбце, на моменте внесения данных или изменения.
+Если смотреть еще глубже, то возможна такая ситуация, когда поля в столбце `title` должны быть одинаковыми и никак иначе, например книги одинаковые, но различаются издательством или годом.
+В таком случае параметр уникальности надо включать для двух полей одновременно, и тогда мы должны либо:
+1) `id` переделать в SERIAL и дать уникальность по двум полям
+```sql
+    CREATE TABLE public.orders (
+    id serial NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0
+    UNIQUE (id, title)
+);
+```
+2) Или надеемся на то, что цена у нас тоже всегда разная и тогда задаем уникальность по полю `price` и `title`
+```sql
+    CREATE TABLE public.orders (
+    id integer NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0
+    UNIQUE (title, price)
+); 
+```
 ---
 
