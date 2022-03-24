@@ -2,11 +2,6 @@
 
 ## Задача 1
 
-В этом задании вы потренируетесь в:
-- установке elasticsearch
-- первоначальном конфигурировании elastcisearch
-- запуске elasticsearch в docker
-
 Используя докер образ [centos:7](https://hub.docker.com/_/centos) как базовый и 
 [документацию по установке и запуску Elastcisearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html):
 
@@ -18,18 +13,53 @@
 - данные `path` должны сохраняться в `/var/lib`
 - имя ноды должно быть `netology_test`
 
-В ответе приведите:
 - текст Dockerfile манифеста
+```dockerfile
+FROM centos:7
+RUN yum -y install wget perl-Digest-SHA java-17-openjdk && yum clean all
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.0.1-linux-x86_64.tar.gz && \
+    wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.0.1-linux-x86_64.tar.gz.sha512 && \
+    tar -xzf elasticsearch-8.0.1-linux-x86_64.tar.gz && \
+    rm -f elasticsearch-8.0.1-linux-x86_64.tar.gz
+ADD elasticsearch.yml /elasticsearch-8.0.1/config/
+ADD memory.options /elasticsearch-8.0.1/config/jvm.options.d/memory.options
+ENV ES_HOME=/elasticsearch-8.0.1
+RUN groupadd elasticsearch && useradd -g elasticsearch elasticsearch
+RUN mkdir /var/lib/logs \
+    && chown elasticsearch:elasticsearch /var/lib/logs \
+    && mkdir /var/lib/data \
+    && chown elasticsearch:elasticsearch /var/lib/data \
+    && chown -R elasticsearch:elasticsearch /elasticsearch-8.0.1/
+RUN mkdir /elasticsearch-8.0.1/snapshots &&\
+    chown elasticsearch:elasticsearch /elasticsearch-8.0.1/snapshots
+USER elasticsearch
+EXPOSE 9200
+CMD ["/usr/sbin/init"]
+CMD ["/elasticsearch-8.0.1/bin/elasticsearch"]
+```
 - ссылку на образ в репозитории dockerhub
+https://hub.docker.com/repository/docker/iaberesnev/netology_elasticsearch
 - ответ `elasticsearch` на запрос пути `/` в json виде
+```json
+{
+  "name": "511611abc8b8",
+  "cluster_name": "netology_test",
+  "cluster_uuid": "jWZZ9WDBQ52zsn5JfzvyBA",
+  "version": {
+    "number": "8.0.1",
+    "build_flavor": "default",
+    "build_type": "tar",
+    "build_hash": "801d9ccc7c2ee0f2cb121bbe22ab5af77a902372",
+    "build_date": "2022-02-24T13:55:40.601285296Z",
+    "build_snapshot": false,
+    "lucene_version": "9.0.0",
+    "minimum_wire_compatibility_version": "7.17.0",
+    "minimum_index_compatibility_version": "7.0.0"
+  },
+  "tagline": "You Know, for Search"
+}
 
-Подсказки:
-- возможно вам понадобится установка пакета perl-Digest-SHA для корректной работы пакета shasum
-- при сетевых проблемах внимательно изучите кластерные и сетевые настройки в elasticsearch.yml
-- при некоторых проблемах вам поможет docker директива ulimit
-- elasticsearch в логах обычно описывает проблему и пути ее решения
-
-Далее мы будем работать с данным экземпляром elasticsearch.
+```
 
 ## Задача 2
 
@@ -46,19 +76,58 @@
 | ind-1| 0 | 1 |
 | ind-2 | 1 | 2 |
 | ind-3 | 2 | 4 |
+```commandline
+curl -X PUT "localhost:9200/ind-1?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,  
+      "number_of_replicas": 0 
+    }
+  }
+}
+'
+curl -X PUT "localhost:9200/ind-2?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 2,  
+      "number_of_replicas": 1 
+    }
+  }
+}
+'
+curl -X PUT "localhost:9200/ind-3?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 4,  
+      "number_of_replicas": 2 
+    }
+  }
+}
+'
+```
 
 Получите список индексов и их статусов, используя API и **приведите в ответе** на задание.
+![catIndices](images/catIndices.png)  
+Получите состояние кластера `elasticsearch`, используя API.  
+![elastikHealth](images/elastikHealth.png)  
+Как вы думаете, почему часть индексов и кластер находится в состоянии yellow?  
+В данном случае желтый статус кластера установился т.к. присутствуют индексы с желтым статусом.
+Желтый статус индексов означает, что есть доступные шарды, но количество реплик не соответствует заданному.
+В этом случае запросы к индексу продолжают возвращаться корректные результаты, но если откажет узел с мастер шардом,
+то все данные будут потеряны.
 
-Получите состояние кластера `elasticsearch`, используя API.
-
-Как вы думаете, почему часть индексов и кластер находится в состоянии yellow?
 
 Удалите все индексы.
+```commandline
+curl -X DELETE "localhost:9200/ind-1?pretty"
+curl -X DELETE "localhost:9200/ind-2?pretty"
+curl -X DELETE "localhost:9200/ind-3?pretty"
+```  
+![deleteAll](images/deleteAll.png)
 
-**Важно**
-
-При проектировании кластера elasticsearch нужно корректно рассчитывать количество реплик и шард,
-иначе возможна потеря данных индексов, вплоть до полной, при деградации системы.
 
 ## Задача 3
 

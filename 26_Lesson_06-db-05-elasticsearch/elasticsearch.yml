@@ -1,0 +1,7 @@
+cluster.name: netology_test
+discovery.type: single-node
+path.logs: /var/lib/logs
+path.repo: /elasticsearch-8.0.1/snapshots
+network.host: 0.0.0.0
+discovery.seed_hosts: ["127.0.0.1", "[::1]"]
+xpack.security.enabled: false
