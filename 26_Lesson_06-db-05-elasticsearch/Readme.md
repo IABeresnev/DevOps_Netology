@@ -25,16 +25,11 @@ ADD elasticsearch.yml /elasticsearch-8.0.1/config/
 ADD memory.options /elasticsearch-8.0.1/config/jvm.options.d/memory.options
 ENV ES_HOME=/elasticsearch-8.0.1
 RUN groupadd elasticsearch && useradd -g elasticsearch elasticsearch
-RUN mkdir /var/lib/logs \
-    && chown elasticsearch:elasticsearch /var/lib/logs \
-    && mkdir /var/lib/data \
-    && chown elasticsearch:elasticsearch /var/lib/data \
-    && chown -R elasticsearch:elasticsearch /elasticsearch-8.0.1/
-RUN mkdir /elasticsearch-8.0.1/snapshots &&\
-    chown elasticsearch:elasticsearch /elasticsearch-8.0.1/snapshots
+RUN mkdir /var/lib/logs && chown elasticsearch:elasticsearch /var/lib/logs && mkdir /var/lib/data \
+    && chown elasticsearch:elasticsearch /var/lib/data && chown -R elasticsearch:elasticsearch /elasticsearch-8.0.1/
+RUN mkdir /elasticsearch-8.0.1/snapshots && chown elasticsearch:elasticsearch /elasticsearch-8.0.1/snapshots
 USER elasticsearch
 EXPOSE 9200
-CMD ["/usr/sbin/init"]
 CMD ["/elasticsearch-8.0.1/bin/elasticsearch"]
 ```
 - ссылку на образ в репозитории dockerhub
@@ -139,30 +134,82 @@ curl -X DELETE "localhost:9200/ind-3?pretty"
 
 Используя API [зарегистрируйте](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshots-register-repository.html#snapshots-register-repository) 
 данную директорию как `snapshot repository` c именем `netology_backup`.
-
-**Приведите в ответе** запрос API и результат вызова API для создания репозитория.
+```commandline
+curl -X PUT "localhost:9200/_snapshot/netology_backup" -H 'Content-Type: application/json' -d'
+{
+  "type": "fs",
+  "settings": {
+   "location": "/elasticsearch-8.0.1/snapshots"
+  }
+}
+'
+```
+![deleteAll](images/snapstorack.png)
 
 Создайте индекс `test` с 0 реплик и 1 шардом и **приведите в ответе** список индексов.
+```commandline
+curl -X PUT "localhost:9200/test?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,  
+      "number_of_replicas": 0 
+    }
+  }
+}
+'
+```
+![deleteAll](images/indtest.png)
 
 [Создайте `snapshot`](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshots-take-snapshot.html) 
 состояния кластера `elasticsearch`.
 
+```commandline
+curl -X PUT "localhost:9200/_snapshot/netology_backup/netology_backup_1" -H 'Content-Type: application/json' -d'
+{
+  "indices": "",
+  "ignore_unavailable": true,
+  "include_global_state": false,
+  "metadata": {
+    "taken_by": "iberesnev",
+    "taken_because": "backup for task"
+  }
+}
+'
+```
+![deleteAll](images/snaptaken.png)
+Получить информацию о snapshot'е.
+`curl -X GET "localhost:9200/_snapshot/netology_backup/netology_backup_1" | jq `
+![deleteAll](images/snapstatus.png)
+
 **Приведите в ответе** список файлов в директории со `snapshot`ами.
-
+![deleteAll](images/lssnapdir.png)
 Удалите индекс `test` и создайте индекс `test-2`. **Приведите в ответе** список индексов.
-
+```commandline
+curl -X DELETE "localhost:9200/test?pretty"
+curl -X PUT "localhost:9200/test-2?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,  
+      "number_of_replicas": 0 
+    }
+  }
+}
+'
+```
+![deleteAll](images/incd2.png)
 [Восстановите](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshots-restore-snapshot.html) состояние
 кластера `elasticsearch` из `snapshot`, созданного ранее. 
 
 **Приведите в ответе** запрос к API восстановления и итоговый список индексов.
 
-Подсказки:
-- возможно вам понадобится доработать `elasticsearch.yml` в части директивы `path.repo` и перезапустить `elasticsearch`
+```commandline
+curl -X POST "localhost:9200/_snapshot/netology_backup/netology_backup_1/_restore" -H 'Content-Type: application/json' -d'
+{
+  "indices": "test"
+}
+'
+```
+![deleteAll](images/restore.png)
 
----
-
-### Как cдавать задание
-
-Выполненное домашнее задание пришлите ссылкой на .md-файл в вашем репозитории.
-
----
